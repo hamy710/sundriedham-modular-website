@@ -52,10 +52,12 @@ private fun Routing.configureAuthRoutes() {
                     .withClaim("username", credentials.username)
                     .withExpiresAt(Date(System.currentTimeMillis() + 60000))
                     .sign(Algorithm.HMAC256(jwtSecret))
-                call.respond(AuthenticationResponse(
-                    token = token,
-                    refreshToken = "Not Implemented" // TODO:
-                ))
+                call.respond(
+                    AuthenticationResponse(
+                        token = token,
+                        refreshToken = "Not Implemented" // TODO:
+                    )
+                )
             } else {
                 call.respond(status = HttpStatusCode.Forbidden, message = "Failed to Authenticate")
             }

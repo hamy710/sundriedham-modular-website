@@ -2,10 +2,10 @@ package com.sundriedham
 
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
-import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.server.testing.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,6 +16,7 @@ private fun myTestApplication(block: suspend (HttpClient) -> Unit) {
         block(createTestClient())
     }
 }
+
 private fun ApplicationTestBuilder.createTestClient(): HttpClient {
     return createClient {
         install(ContentNegotiation) {
