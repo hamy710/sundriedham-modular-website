@@ -15,7 +15,6 @@ data class Identifier<Entity>(
 ) {
     override fun toString(): String =
         value.toString()
-
 }
 
 interface UserRepository {
