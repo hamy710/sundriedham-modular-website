@@ -1,5 +1,7 @@
 package com.sundriedham
 
+import com.sundriedham.Authentication.InMemoryUserRepository
+import com.sundriedham.Authentication.JWTService
 import com.sundriedham.Authentication.configureSecurity
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -13,7 +15,10 @@ fun main() {
 }
 
 fun Application.module() {
-    configureSecurity()
+    val userRepository = InMemoryUserRepository()
+    val jwtService = JWTService(this, userRepository)
+
+    configureSecurity(jwtService = jwtService)
     configureRouting()
     // TODO: Refactor into another place
     install(ContentNegotiation) {

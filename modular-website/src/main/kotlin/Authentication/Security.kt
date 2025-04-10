@@ -9,8 +9,9 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
 
-fun Application.configureSecurity() {
-    val jwtService = JWTService(this)
+fun Application.configureSecurity(
+    jwtService: JWTService,
+) {
     authentication {
         jwt("auth-jwt") {
             realm = jwtService.realm
@@ -19,38 +20,30 @@ fun Application.configureSecurity() {
         }
     }
     routing {
-        configureAuthRoutes(jwtService)
+        configureAuthRoutes(
+            jwtService
+        )
     }
 }
 
-private fun Routing.configureAuthRoutes(jwtService: JWTService) {
+private fun Routing.configureAuthRoutes(
+    jwtService: JWTService
+) {
     route("auth") {
         post("login") {
-            val credentials = call.receive<LoginCredentialsRequest>()
-            if (credentials.username == "demo" && credentials.password == "demo") {
-                val username = "demo"
-                call.respond(
-                    AuthenticationResponse(
-                        token = jwtService.createAccessToken(username),
-                        refreshToken = jwtService.createRefreshToken(username)
-                    )
-                )
-            } else {
+            val response = jwtService.authenticate(call.receive<LoginCredentialsRequest>())
+            if (response == null) {
                 call.respond(status = HttpStatusCode.Forbidden, message = "Failed to Authenticate")
+            } else {
+                call.respond(response)
             }
         }
         post("refresh") {
-            val refreshRequest = call.receive<RefreshAuthenticationRequest>()
-            val username = jwtService.userNameForToken(refreshRequest.token)
-            if (jwtService.verifyRefreshToken(refreshRequest.token) && username != null) {
-                call.respond(
-                    AuthenticationResponse(
-                        token = jwtService.createAccessToken(username),
-                        refreshToken = jwtService.createRefreshToken(username)
-                    )
-                )
-            } else {
+            val response = jwtService.authenticate(call.receive<RefreshAuthenticationRequest>())
+            if (response == null) {
                 call.respond(status = HttpStatusCode.Forbidden, message = "Refresh token is invalid")
+            } else {
+                call.respond(response)
             }
         }
         authenticate("auth-jwt") {
