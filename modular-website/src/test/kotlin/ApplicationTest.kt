@@ -1,5 +1,8 @@
 package com.sundriedham
 
+import com.sundriedham.Authentication.AuthenticationResponse
+import com.sundriedham.Authentication.LoginCredentialsRequest
+import com.sundriedham.Authentication.RefreshAuthenticationRequest
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
