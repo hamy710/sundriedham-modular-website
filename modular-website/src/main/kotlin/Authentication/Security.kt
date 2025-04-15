@@ -29,6 +29,7 @@ fun Application.configureSecurity(
 private fun Routing.configureAuthRoutes(
     jwtService: JWTService
 ) {
+    // "/auth/login, "/auth/refresh
     route("auth") {
         post("login") {
             val response = jwtService.authenticate(call.receive<LoginCredentialsRequest>())

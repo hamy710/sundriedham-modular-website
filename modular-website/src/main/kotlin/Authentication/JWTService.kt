@@ -15,6 +15,7 @@ class JWTService(
 ) {
     // TODO: Read from config
     private val jwtAudience = "jwt-audience"
+    private val refreshTokenAudience = "sundriedham-refresh"
     private val jwtIssuer = "https://jwt-provider-domain/"
     val realm = "ktor sample app"
     private val jwtSecret = "secret"
@@ -25,15 +26,21 @@ class JWTService(
         .withIssuer(jwtIssuer)
         .build()
 
+    val refreshVerifier: JWTVerifier = JWT
+        .require(Algorithm.HMAC256(jwtSecret))
+        .withAudience(refreshTokenAudience)
+        .withIssuer(jwtIssuer)
+        .build()
+
     private fun createAccessToken(user: User): String =
-        createJWTToken(user, 3_600_000)
+        createJWTToken(user, 3_600_000, jwtAudience)
 
     private fun createRefreshToken(user: User): String =
-        createJWTToken(user, 86_400_000)
+        createJWTToken(user, 86_400_000, refreshTokenAudience)
 
-    private fun createJWTToken(user: User, expireIn: Int): String =
+    private fun createJWTToken(user: User, expireIn: Int, audience: String): String =
         JWT.create()
-            .withAudience(jwtAudience)
+            .withAudience(audience)
             .withIssuer(jwtIssuer)
             .withClaim("username", user.username)
             .withClaim("userID", user.id.toString())
@@ -43,13 +50,13 @@ class JWTService(
     fun authenticate(request: LoginCredentialsRequest): AuthenticationResponse? =
         userRepository
             .retrieveUser(request.username, request.password)
-            ?.let(this::createAuthenticationResponse)
+            ?.let(::createAuthenticationResponse)
 
     fun authenticate(request: RefreshAuthenticationRequest): AuthenticationResponse? =
         if (verifyRefreshToken(request.token)) {
-            userIDForToken(request.token)
+            userIDForRefreshToken(request.token)
                 ?.let(userRepository::retrieveUser)
-                ?.let(this::createAuthenticationResponse)
+                ?.let(::createAuthenticationResponse)
         } else {
             null
         }
@@ -67,24 +74,17 @@ class JWTService(
             null
 
 
-    fun verifyRefreshToken(token: String): Boolean {
-        val decodedJWT: DecodedJWT? = getDecodedJWT(token)
+    private fun verifyRefreshToken(token: String): Boolean {
+        val decodedJWT: DecodedJWT? = decodeRefreshJWT(token)
 
         return decodedJWT?.let {
-            return it.audience.contains(jwtAudience)
+            return it.audience.contains(refreshTokenAudience)
         } ?: false
     }
 
-    fun userNameForToken(token: String): String? =
+    private fun userIDForRefreshToken(token: String): Identifier<User>? =
         if (verifyRefreshToken(token)) {
-            getDecodedJWT(token)?.claims?.get("username").toString()
-        } else {
-            null
-        }
-
-    private fun userIDForToken(token: String): Identifier<User>? =
-        if (verifyRefreshToken(token)) {
-            getDecodedJWT(token)
+            decodeRefreshJWT(token)
                 ?.claims
                 ?.get("userID")
                 ?.`as`(TextNode::class.java) // If we use `.toString` directly Java inserts an extra set of quotes with causes the UUID conversion to fail
@@ -96,9 +96,9 @@ class JWTService(
         }
 
 
-    private fun getDecodedJWT(token: String): DecodedJWT? =
+    private fun decodeRefreshJWT(token: String): DecodedJWT? =
         try {
-            verifier.verify(token)
+            refreshVerifier.verify(token)
         } catch (ex: Exception) {
             null
         }
