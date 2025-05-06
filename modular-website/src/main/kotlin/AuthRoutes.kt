@@ -1,38 +1,22 @@
-package com.sundriedham.Authentication
+package com.sundriedham
 
+import com.sundriedham.Authentication.token.JwtTokenService
+import com.sundriedham.request.LoginCredentialsRequest
+import com.sundriedham.request.RefreshAuthenticationRequest
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.Serializable
 
-fun Application.configureSecurity(
-    jwtService: JWTService,
-) {
-    authentication {
-        jwt("auth-jwt") {
-            realm = jwtService.realm
-            verifier(jwtService.verifier)
-            validate { credential -> jwtService.validate(credential) }
-        }
-    }
-    routing {
-        configureAuthRoutes(
-            jwtService
-        )
-    }
-}
-
-private fun Routing.configureAuthRoutes(
-    jwtService: JWTService
+fun Routing.configureAuthRoutes(
+    jwtTokenService: JwtTokenService
 ) {
     // "/auth/login, "/auth/refresh
     route("auth") {
         post("login") {
-            val response = jwtService.authenticate(call.receive<LoginCredentialsRequest>())
+            val response = jwtTokenService.authenticate(call.receive<LoginCredentialsRequest>())
             if (response == null) {
                 call.respond(status = HttpStatusCode.Forbidden, message = "Failed to Authenticate")
             } else {
@@ -40,7 +24,7 @@ private fun Routing.configureAuthRoutes(
             }
         }
         post("refresh") {
-            val response = jwtService.authenticate(call.receive<RefreshAuthenticationRequest>())
+            val response = jwtTokenService.authenticate(call.receive<RefreshAuthenticationRequest>())
             if (response == null) {
                 call.respond(status = HttpStatusCode.Forbidden, message = "Refresh token is invalid")
             } else {
@@ -58,11 +42,3 @@ private fun Routing.configureAuthRoutes(
     }
 }
 
-@Serializable
-data class LoginCredentialsRequest(val username: String, val password: String)
-
-@Serializable
-data class AuthenticationResponse(val token: String, val refreshToken: String)
-
-@Serializable
-data class RefreshAuthenticationRequest(val token: String)

@@ -1,21 +1,25 @@
 package com.sundriedham
 
-import com.sundriedham.Authentication.AuthenticationResponse
-import com.sundriedham.Authentication.LoginCredentialsRequest
-import com.sundriedham.Authentication.RefreshAuthenticationRequest
+import com.sundriedham.request.AuthenticationResponse
+import com.sundriedham.request.LoginCredentialsRequest
+import com.sundriedham.request.RefreshAuthenticationRequest
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.config.*
 import io.ktor.server.testing.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 private fun myTestApplication(block: suspend (HttpClient) -> Unit) {
     testApplication {
-        application { module() }
+        environment {
+            config = ApplicationConfig("application.conf")
+        }
+
         block(createTestClient())
     }
 }

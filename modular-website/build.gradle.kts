@@ -12,7 +12,7 @@ group = "com.sundriedham"
 version = "0.0.1"
 
 application {
-    mainClass = "com.sundriedham.ApplicationKt"
+    mainClass = "io.ktor.server.netty.EngineMain"
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")

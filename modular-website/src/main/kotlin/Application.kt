@@ -1,27 +1,35 @@
 package com.sundriedham
 
-import com.sundriedham.Authentication.InMemoryUserRepository
-import com.sundriedham.Authentication.JWTService
-import com.sundriedham.Authentication.configureSecurity
-import io.ktor.serialization.kotlinx.json.*
+import com.sundriedham.data.user.InMemoryUserRepository
+import com.sundriedham.Authentication.token.JwtTokenService
+import com.sundriedham.Authentication.token.TokenConfig
+import com.sundriedham.plugins.configureSecurity
+import com.sundriedham.plugins.configureRouting
+import com.sundriedham.plugins.configureSerialization
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.ktor.server.plugins.contentnegotiation.*
 
-fun main() {
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
-        .start(wait = true)
+fun main(args: Array<String>) {
+    EngineMain.main(args)
 }
 
-fun Application.module() {
-    val userRepository = InMemoryUserRepository()
-    val jwtService = JWTService(this, userRepository)
 
-    configureSecurity(jwtService = jwtService)
+fun Application.module() {
+    val tokenConfig = TokenConfig(
+        secret = System.getenv("JWT_SECRET"),
+        issuer = environment.config.property("jwt.issuer").getString(),
+        jwtAudience = environment.config.property("jwt.jwtAudience").getString(),
+        refreshTokenAudience = environment.config.property("jwt.refreshTokenAudience").getString(),
+        expiresIn = 3_600_000L
+
+    )
+    val userRepository = InMemoryUserRepository()
+    val jwtTokenService = JwtTokenService(userRepository, tokenConfig)
+
+
+    configureSecurity(jwtTokenService = jwtTokenService)
     configureRouting()
-    // TODO: Refactor into another place
-    install(ContentNegotiation) {
-        json()
-    }
+    configureSerialization()
+
 }

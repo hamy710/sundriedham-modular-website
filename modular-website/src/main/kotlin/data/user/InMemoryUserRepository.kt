@@ -1,4 +1,4 @@
-package com.sundriedham.Authentication
+package com.sundriedham.data.user
 
 import java.util.*
 

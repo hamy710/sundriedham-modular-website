@@ -1,4 +1,4 @@
-package com.sundriedham
+package com.sundriedham.plugins
 
 import io.ktor.server.application.*
 import io.ktor.server.response.*
