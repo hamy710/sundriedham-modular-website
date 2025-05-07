@@ -5,6 +5,8 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.fasterxml.jackson.databind.node.TextNode
+import com.sundriedham.Authentication.hashing.HashService
+import com.sundriedham.Authentication.hashing.SaltedHash
 import com.sundriedham.data.user.Identifier
 import com.sundriedham.data.user.User
 import com.sundriedham.data.user.UserRepository
@@ -12,18 +14,14 @@ import com.sundriedham.request.AuthenticationResponse
 import com.sundriedham.request.LoginCredentialsRequest
 import com.sundriedham.request.RefreshAuthenticationRequest
 import io.ktor.server.auth.jwt.*
+import kotlinx.coroutines.runBlocking
 import java.util.*
 
 class JwtTokenService (
     private val userRepository: UserRepository,
-    private val config: TokenConfig
+    private val config: TokenConfig,
+    private val hashingService: HashService,
 ) : TokenService{
-    // TODO: Read from config
-//    private val jwtAudience = "jwt-audience"
-//    private val refreshTokenAudience = "sundriedham-refresh"
-//    private val jwtIssuer = "https://jwt-provider-domain/"
-//    private val jwtSecret = "secret"
-
     val verifier: JWTVerifier = JWT
         .require(Algorithm.HMAC256(config.secret))
         .withAudience(config.jwtAudience)
@@ -36,30 +34,47 @@ class JwtTokenService (
         .withIssuer(config.issuer)
         .build()
 
-    override fun authenticate(request: LoginCredentialsRequest): AuthenticationResponse? =
-        userRepository
-            .retrieveUser(request.username, request.password)
-            ?.let(::createAuthenticationResponse)
+    override suspend fun authenticate(request: LoginCredentialsRequest): AuthenticationResponse? {
+        val user = userRepository.getUserByUserName(request.username) ?: return null
+//        val isValid = hashingService.varify(
+//            value = request.password,
+//            saltedHash = SaltedHash(
+//                hash = user.password,
+//                salt = user.salt
+//            )
+//        )
+//        if (!isValid) return null
+        return createAuthenticationResponse(user)
+    }
 
-    override fun authenticate(request: RefreshAuthenticationRequest): AuthenticationResponse? =
+
+
+    override suspend fun authenticate(request: RefreshAuthenticationRequest): AuthenticationResponse? {
         if (verifyRefreshToken(request.token)) {
-            userIDForRefreshToken(request.token)
-                ?.let(userRepository::retrieveUser)
-                ?.let(::createAuthenticationResponse)
+            val userID = userIDForRefreshToken(request.token) ?: return null
+            val user = userRepository.getUserByUserid(userID) ?: return null
+            return createAuthenticationResponse(user)
         } else {
-            null
+            return null
         }
+    }
 
+    // TODO: Should be moved into AuthenticationRouter
+    private fun createAuthenticationResponse(user: User): AuthenticationResponse =
+        AuthenticationResponse(
+            token = createAccessToken(user),
+            refreshToken = createRefreshToken(user)
+        )
     override fun validate(credential: JWTCredential): JWTPrincipal? =
         if (credential.payload.audience.contains(config.jwtAudience))
             JWTPrincipal(credential.payload)
         else
             null
 
-    private fun createAccessToken(user: User): String =
+    fun createAccessToken(user: User): String =
         createJWTToken(user, config.expiresIn, config.jwtAudience)
 
-    private fun createRefreshToken(user: User): String =
+    fun createRefreshToken(user: User): String =
         createJWTToken(user, config.expiresIn, config.refreshTokenAudience)
 
     private fun createJWTToken(user: User, expireIn: Long, audience: String): String =
@@ -67,15 +82,11 @@ class JwtTokenService (
             .withAudience(audience)
             .withIssuer(config.issuer)
             .withClaim("username", user.username)
-            .withClaim("userID", user.id.toString())
+            .withClaim("userID", user.userid.toString())
             .withExpiresAt(Date(System.currentTimeMillis() + expireIn))
             .sign(Algorithm.HMAC256(config.secret))
 
-    private fun createAuthenticationResponse(user: User): AuthenticationResponse =
-        AuthenticationResponse(
-            token = createAccessToken(user),
-            refreshToken = createRefreshToken(user)
-        )
+
 
     private fun verifyRefreshToken(token: String): Boolean {
         val decodedJWT: DecodedJWT? = decodeRefreshJWT(token)

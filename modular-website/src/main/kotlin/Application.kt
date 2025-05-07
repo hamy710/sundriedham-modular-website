@@ -1,8 +1,11 @@
 package com.sundriedham
 
+import com.sundriedham.Authentication.hashing.SHA256HashingService
 import com.sundriedham.data.user.InMemoryUserRepository
 import com.sundriedham.Authentication.token.JwtTokenService
 import com.sundriedham.Authentication.token.TokenConfig
+import com.sundriedham.data.user.PostgresUserRepository
+import com.sundriedham.plugins.configureDatabases
 import com.sundriedham.plugins.configureSecurity
 import com.sundriedham.plugins.configureRouting
 import com.sundriedham.plugins.configureSerialization
@@ -24,11 +27,15 @@ fun Application.module() {
         expiresIn = 3_600_000L
 
     )
-    val userRepository = InMemoryUserRepository()
-    val jwtTokenService = JwtTokenService(userRepository, tokenConfig)
 
 
-    configureSecurity(jwtTokenService = jwtTokenService)
+    configureDatabases()
+    val userRepository = PostgresUserRepository()
+    val hashingService = SHA256HashingService()
+    val jwtTokenService = JwtTokenService(userRepository, tokenConfig, hashingService)
+
+
+    configureSecurity(jwtTokenService, userRepository, hashingService)
     configureRouting()
     configureSerialization()
 

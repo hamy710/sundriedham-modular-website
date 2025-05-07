@@ -1,6 +1,7 @@
 package com.sundriedham.data.user
 
 interface UserRepository {
-    fun retrieveUser(id: Identifier<User>): User?
-    fun retrieveUser(username: String, password: String): User?
+    suspend fun getUserByUserid(id: Identifier<User>): User?
+    suspend fun getUserByUserName(username: String): User?
+    suspend fun insertUser(user: User): Boolean
 }

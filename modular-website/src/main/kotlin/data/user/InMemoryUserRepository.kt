@@ -4,31 +4,29 @@ import java.util.*
 
 class InMemoryUserRepository : UserRepository {
     private val demoUser = User(
-        "demo",
-        Identifier<User>(UUID.randomUUID()),
-        "demo",
-        "demo"
+        username = "demo",
+        userid = Identifier<User>(UUID.randomUUID()),
+        salt = "demo",
+        password = "demo"
     )
 
     private val users: Map<Identifier<User>, User> = mapOf(
-        Pair(demoUser.id, demoUser)
+        Pair(demoUser.userid, demoUser)
     )
 
     private val usersByUsername: Map<String, User> = users
         .map { Pair(it.value.username, it.value) }
         .toMap()
 
-    override fun retrieveUser(id: Identifier<User>): User? {
+    override suspend fun getUserByUserid(id: Identifier<User>): User? {
         return users[id]
     }
 
-    override fun retrieveUser(username: String, password: String): User? {
-        return usersByUsername[username]?.let { user ->
-            if (user.password == password) {
-                user
-            } else {
-                null
-            }
-        }
+    override suspend fun getUserByUserName(username: String): User? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun insertUser(user: User): Boolean {
+        TODO("Not yet implemented")
     }
 }
