@@ -1,7 +1,7 @@
-package com.sundriedham.data.db
+package com.sundriedham.authentication.data.db
 
-import com.sundriedham.data.user.Identifier
-import com.sundriedham.data.user.User
+import com.sundriedham.authentication.data.user.Identifier
+import com.sundriedham.authentication.data.user.User
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass

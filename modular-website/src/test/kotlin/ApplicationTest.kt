@@ -17,7 +17,7 @@ import kotlin.test.assertEquals
 private fun myTestApplication(block: suspend (HttpClient) -> Unit) {
     testApplication {
         environment {
-            config = ApplicationConfig("application.conf")
+            config = ApplicationConfig("test.conf")
         }
 
         block(createTestClient())

@@ -1,16 +1,14 @@
 package com.sundriedham
 
 import com.sundriedham.Authentication.hashing.SHA256HashingService
-import com.sundriedham.data.user.InMemoryUserRepository
 import com.sundriedham.Authentication.token.JwtTokenService
 import com.sundriedham.Authentication.token.TokenConfig
-import com.sundriedham.data.user.PostgresUserRepository
+import com.sundriedham.authentication.data.user.PostgresUserRepository
 import com.sundriedham.plugins.configureDatabases
 import com.sundriedham.plugins.configureSecurity
 import com.sundriedham.plugins.configureRouting
 import com.sundriedham.plugins.configureSerialization
 import io.ktor.server.application.*
-import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 
 fun main(args: Array<String>) {
@@ -32,7 +30,7 @@ fun Application.module() {
     configureDatabases()
     val userRepository = PostgresUserRepository()
     val hashingService = SHA256HashingService()
-    val jwtTokenService = JwtTokenService(userRepository, tokenConfig, hashingService)
+    val jwtTokenService = JwtTokenService(tokenConfig)
 
 
     configureSecurity(jwtTokenService, userRepository, hashingService)

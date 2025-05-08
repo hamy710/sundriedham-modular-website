@@ -2,8 +2,8 @@ package com.sundriedham.plugins
 
 import com.sundriedham.Authentication.hashing.HashService
 import com.sundriedham.Authentication.token.JwtTokenService
-import com.sundriedham.configureAuthRoutes
-import com.sundriedham.data.user.UserRepository
+import com.sundriedham.Authentication.configureAuthRoutes
+import com.sundriedham.authentication.data.user.UserRepository
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*

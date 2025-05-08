@@ -1,9 +1,9 @@
-package com.sundriedham.data.user
+package com.sundriedham.authentication.data.user
 
-import com.sundriedham.data.db.UserDAO
-import com.sundriedham.data.db.UserTable
-import com.sundriedham.data.db.daoToModel
-import com.sundriedham.data.db.suspendTransaction
+import com.sundriedham.authentication.data.db.UserDAO
+import com.sundriedham.authentication.data.db.UserTable
+import com.sundriedham.authentication.data.db.daoToModel
+import com.sundriedham.authentication.data.db.suspendTransaction
 import org.jetbrains.exposed.sql.insert
 
 class PostgresUserRepository : UserRepository {
@@ -11,7 +11,7 @@ class PostgresUserRepository : UserRepository {
 
     override suspend fun getUserByUserName(username: String): User? = suspendTransaction {
         UserDAO.Query.find (
-            {UserTable.username eq username}
+            { UserTable.username eq username}
         ).limit(1)
             .map(::daoToModel)
             .firstOrNull()
@@ -29,7 +29,7 @@ class PostgresUserRepository : UserRepository {
 
     override suspend fun getUserByUserid(id: Identifier<User>): User? = suspendTransaction {
         UserDAO.Query.find(
-            {UserTable.id eq id.value}
+            { UserTable.id eq id.value}
         ).limit(1)
             .map (::daoToModel)
             .firstOrNull()
