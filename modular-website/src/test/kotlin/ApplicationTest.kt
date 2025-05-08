@@ -1,8 +1,8 @@
 package com.sundriedham
 
-import com.sundriedham.request.AuthenticationResponse
-import com.sundriedham.request.LoginCredentialsRequest
-import com.sundriedham.request.RefreshAuthenticationRequest
+import authentication.domain.AuthenticationResponse
+import authentication.domain.LoginCredentialsRequest
+import authentication.domain.RefreshAuthenticationRequest
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -45,7 +45,7 @@ class ApplicationTest {
     fun testLogin() = myTestApplication { client ->
         client.post("/auth/login") {
             contentType(ContentType.Application.Json)
-            setBody(LoginCredentialsRequest("demo", "demo"))
+            setBody(LoginCredentialsRequest("test-user111", "testpassword123"))
         }.apply {
             assertEquals(HttpStatusCode.OK, status)
         }
@@ -55,7 +55,7 @@ class ApplicationTest {
     fun testRefreshToken() = myTestApplication { client ->
         val response: AuthenticationResponse = client.post("/auth/login") {
             contentType(ContentType.Application.Json)
-            setBody(LoginCredentialsRequest("demo", "demo"))
+            setBody(LoginCredentialsRequest("test-user111", "testpassword123"))
         }.apply {
             assertEquals(HttpStatusCode.OK, status)
         }.body()

@@ -1,4 +1,4 @@
-package com.sundriedham.plugins
+package plugins
 
 import io.ktor.server.application.*
 import org.jetbrains.exposed.sql.Database

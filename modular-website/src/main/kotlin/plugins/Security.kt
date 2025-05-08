@@ -1,9 +1,9 @@
-package com.sundriedham.plugins
+package plugins
 
-import com.sundriedham.Authentication.hashing.HashService
-import com.sundriedham.Authentication.token.JwtTokenService
-import com.sundriedham.Authentication.configureAuthRoutes
-import com.sundriedham.authentication.data.user.UserRepository
+import authentication.data.user.UserRepository
+import authentication.service.hashing.HashService
+import authentication.service.token.JwtTokenService
+import com.sundriedham.authentication.configureAuthRoutes
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*

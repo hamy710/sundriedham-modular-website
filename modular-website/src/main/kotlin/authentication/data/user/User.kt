@@ -1,4 +1,4 @@
-package com.sundriedham.authentication.data.user
+package authentication.data.user
 
 
 data class User(

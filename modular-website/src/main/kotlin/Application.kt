@@ -1,13 +1,13 @@
 package com.sundriedham
 
-import com.sundriedham.Authentication.hashing.SHA256HashingService
-import com.sundriedham.Authentication.token.JwtTokenService
-import com.sundriedham.Authentication.token.TokenConfig
-import com.sundriedham.authentication.data.user.PostgresUserRepository
-import com.sundriedham.plugins.configureDatabases
-import com.sundriedham.plugins.configureSecurity
-import com.sundriedham.plugins.configureRouting
-import com.sundriedham.plugins.configureSerialization
+import authentication.data.user.PostgresUserRepository
+import authentication.service.hashing.SHA256HashingService
+import authentication.service.token.JwtTokenService
+import authentication.service.token.TokenConfig
+import plugins.configureDatabases
+import plugins.configureSecurity
+import plugins.configureRouting
+import plugins.configureSerialization
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
 

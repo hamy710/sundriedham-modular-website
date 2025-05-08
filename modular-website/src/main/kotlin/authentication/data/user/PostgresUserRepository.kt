@@ -1,4 +1,4 @@
-package com.sundriedham.authentication.data.user
+package authentication.data.user
 
 import com.sundriedham.authentication.data.db.UserDAO
 import com.sundriedham.authentication.data.db.UserTable

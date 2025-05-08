@@ -1,4 +1,4 @@
-package com.sundriedham.Authentication.token
+package authentication.service.token
 
 data class TokenConfig (
     val secret: String,

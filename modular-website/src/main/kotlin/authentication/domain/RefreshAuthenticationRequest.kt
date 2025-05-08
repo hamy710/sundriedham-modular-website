@@ -1,4 +1,4 @@
-package com.sundriedham.request
+package authentication.domain
 
 import kotlinx.serialization.Serializable
 

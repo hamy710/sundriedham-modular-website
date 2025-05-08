@@ -1,10 +1,7 @@
-package com.sundriedham.Authentication.token
+package authentication.service.token
 
-import com.sundriedham.authentication.data.user.Identifier
-import com.sundriedham.authentication.data.user.User
-import com.sundriedham.request.AuthenticationResponse
-import com.sundriedham.request.LoginCredentialsRequest
-import com.sundriedham.request.RefreshAuthenticationRequest
+import authentication.data.user.Identifier
+import authentication.data.user.User
 import io.ktor.server.auth.jwt.*
 
 interface TokenService {

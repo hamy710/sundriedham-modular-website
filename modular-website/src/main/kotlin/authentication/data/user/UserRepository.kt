@@ -1,4 +1,4 @@
-package com.sundriedham.authentication.data.user
+package authentication.data.user
 
 interface UserRepository {
     suspend fun getUserByUserid(id: Identifier<User>): User?

@@ -1,14 +1,13 @@
-package com.sundriedham.authentication.router
+package authentication.router
 
-import com.sundriedham.Authentication.hashing.HashService
-import com.sundriedham.Authentication.hashing.SaltedHash
-import com.sundriedham.Authentication.token.JwtTokenService
-import com.sundriedham.Authentication.token.TokenService
-import com.sundriedham.authentication.data.user.User
-import com.sundriedham.authentication.data.user.UserRepository
-import com.sundriedham.request.AuthenticationResponse
-import com.sundriedham.request.LoginCredentialsRequest
-import com.sundriedham.request.RefreshAuthenticationRequest
+import authentication.data.user.User
+import authentication.data.user.UserRepository
+import authentication.service.hashing.HashService
+import authentication.service.hashing.SaltedHash
+import authentication.service.token.TokenService
+import authentication.domain.AuthenticationResponse
+import authentication.domain.LoginCredentialsRequest
+import authentication.domain.RefreshAuthenticationRequest
 import com.sundriedham.utils.networking.NetworkResult
 import org.apache.commons.codec.digest.DigestUtils
 

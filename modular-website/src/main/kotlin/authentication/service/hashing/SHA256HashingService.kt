@@ -1,10 +1,10 @@
-package com.sundriedham.Authentication.hashing
+package authentication.service.hashing
 
 import org.apache.commons.codec.binary.Hex
 import org.apache.commons.codec.digest.DigestUtils
 import java.security.SecureRandom
 
-class SHA256HashingService : HashService{
+class SHA256HashingService : HashService {
     override fun generateSaltHash(value: String, saltLength: Int): SaltedHash {
         val salt = SecureRandom.getInstance("SHA1PRNG").generateSeed(saltLength)
         val saltAsHex = Hex.encodeHexString(salt)

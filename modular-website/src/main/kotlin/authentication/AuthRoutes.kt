@@ -1,14 +1,14 @@
-package com.sundriedham.Authentication
+package com.sundriedham.authentication
 
-import com.sundriedham.Authentication.hashing.HashService
-import com.sundriedham.Authentication.token.JwtTokenService
-import com.sundriedham.authentication.data.user.UserRepository
-import com.sundriedham.authentication.router.AuthenticationRefreshError
-import com.sundriedham.authentication.router.AuthenticationRequestError
-import com.sundriedham.authentication.router.AuthenticationRouter
-import com.sundriedham.request.AuthenticationResponse
-import com.sundriedham.request.LoginCredentialsRequest
-import com.sundriedham.request.RefreshAuthenticationRequest
+import authentication.data.user.UserRepository
+import authentication.service.hashing.HashService
+import authentication.service.token.JwtTokenService
+import authentication.router.AuthenticationRouter
+import authentication.router.AuthenticationRequestError
+import authentication.router.AuthenticationRefreshError
+import authentication.domain.AuthenticationResponse
+import authentication.domain.LoginCredentialsRequest
+import authentication.domain.RefreshAuthenticationRequest
 import com.sundriedham.utils.networking.NetworkResult
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -41,7 +41,7 @@ fun Routing.configureAuthRoutes(
 
     // "/auth/login, "/auth/refresh
     route("auth") {
-        post("signin") {
+        post("login") {
             val request = call.safeReceiveOrNull<LoginCredentialsRequest>() ?: return@post
             when (val result = router.authenticate(request)) {
                 is NetworkResult.Failure<AuthenticationRequestError> -> when (result.error) {

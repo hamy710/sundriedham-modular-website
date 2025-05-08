@@ -1,18 +1,18 @@
-package com.sundriedham.Authentication.token
+package authentication.service.token
 
+import authentication.data.user.User
+import authentication.data.user.Identifier
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.fasterxml.jackson.databind.node.TextNode
-import com.sundriedham.authentication.data.user.Identifier
-import com.sundriedham.authentication.data.user.User
 import io.ktor.server.auth.jwt.*
 import java.util.*
 
 class JwtTokenService (
     private val config: TokenConfig,
-) : TokenService{
+) : TokenService {
     val verifier: JWTVerifier = JWT
         .require(Algorithm.HMAC256(config.secret))
         .withAudience(config.jwtAudience)
