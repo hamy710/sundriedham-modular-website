@@ -19,7 +19,7 @@ class JwtTokenService (
         .withIssuer(config.issuer)
         .build()
 
-    val refreshVerifier: JWTVerifier = JWT
+    private val refreshVerifier: JWTVerifier = JWT
         .require(Algorithm.HMAC256(config.secret))
         .withAudience(config.refreshTokenAudience)
         .withIssuer(config.issuer)

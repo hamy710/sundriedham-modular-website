@@ -9,6 +9,7 @@ import authentication.router.AuthenticationRefreshError
 import authentication.domain.AuthenticationResponse
 import authentication.domain.LoginCredentialsRequest
 import authentication.domain.RefreshAuthenticationRequest
+import authentication.router.AuthenticateSignInError
 import com.sundriedham.utils.networking.NetworkResult
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -39,8 +40,21 @@ fun Routing.configureAuthRoutes(
         jwtTokenService
     )
 
-    // "/auth/login, "/auth/refresh
+    // "/auth/login, "/auth/refresh, "/auth/signup
     route("auth") {
+        post("signup"){
+            val request = call.safeReceiveOrNull<LoginCredentialsRequest>() ?:return@post
+            when (val result = router.authenticateSignup(request)){
+                is NetworkResult.Failure<AuthenticateSignInError> -> when(result.error){
+                    AuthenticateSignInError.DatabaseError ->
+                        call.respond(HttpStatusCode.Conflict,"Database SQL exception")
+                    AuthenticateSignInError.InvalidInput ->
+                        call.respond(HttpStatusCode.BadRequest,"Invalid fields")
+                }
+                is NetworkResult.Success<Unit> -> call.respond(HttpStatusCode.OK)
+            }
+        }
+
         post("login") {
             val request = call.safeReceiveOrNull<LoginCredentialsRequest>() ?: return@post
             when (val result = router.authenticate(request)) {
