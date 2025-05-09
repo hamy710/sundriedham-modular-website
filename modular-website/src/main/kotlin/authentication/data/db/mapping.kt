@@ -12,14 +12,15 @@ import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import java.util.*
 
-object UserTable: UUIDTable("usertable"){
+object UserTable : UUIDTable("usertable") {
     val username = varchar("username", 64)
     val password = varchar("password", 64)
     val salt = varchar("salt", 64)
 }
 
-class UserDAO(userid: EntityID<UUID>): UUIDEntity(userid){
-    object Query: UUIDEntityClass<UserDAO>(UserTable)
+class UserDAO(userid: EntityID<UUID>) : UUIDEntity(userid) {
+    object Query : UUIDEntityClass<UserDAO>(UserTable)
+
     var username by UserTable.username
     var password by UserTable.password
     var salt by UserTable.salt
@@ -32,6 +33,6 @@ fun daoToModel(dao: UserDAO) = User(
     userid = Identifier(dao.id.value)
 )
 
-suspend fun <T> suspendTransaction(block: Transaction.() -> T) : T = newSuspendedTransaction (
+suspend fun <T> suspendTransaction(block: Transaction.() -> T): T = newSuspendedTransaction(
     Dispatchers.IO, statement = block
 )

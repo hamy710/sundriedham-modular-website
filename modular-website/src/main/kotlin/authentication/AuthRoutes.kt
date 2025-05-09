@@ -20,10 +20,10 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 
-suspend inline fun <reified T: Any> ApplicationCall.safeReceiveOrNull(): T? {
+suspend inline fun <reified T : Any> ApplicationCall.safeReceiveOrNull(): T? {
     try {
         return receive<T>()
-    } catch (e: ContentTransformationException){
+    } catch (e: ContentTransformationException) {
         respond(HttpStatusCode.BadRequest)
         return null
     }
@@ -42,15 +42,17 @@ fun Routing.configureAuthRoutes(
 
     // "/auth/login, "/auth/refresh, "/auth/signup
     route("auth") {
-        post("signup"){
-            val request = call.safeReceiveOrNull<LoginCredentialsRequest>() ?:return@post
-            when (val result = router.authenticateSignup(request)){
-                is NetworkResult.Failure<AuthenticateSignInError> -> when(result.error){
+        post("signup") {
+            val request = call.safeReceiveOrNull<LoginCredentialsRequest>() ?: return@post
+            when (val result = router.authenticateSignup(request)) {
+                is NetworkResult.Failure<AuthenticateSignInError> -> when (result.error) {
                     AuthenticateSignInError.DatabaseError ->
-                        call.respond(HttpStatusCode.Conflict,"Database SQL exception")
+                        call.respond(HttpStatusCode.Conflict, "Database SQL exception")
+
                     AuthenticateSignInError.InvalidInput ->
-                        call.respond(HttpStatusCode.BadRequest,"Invalid fields")
+                        call.respond(HttpStatusCode.BadRequest, "Invalid fields")
                 }
+
                 is NetworkResult.Success<Unit> -> call.respond(HttpStatusCode.OK)
             }
         }
@@ -61,9 +63,11 @@ fun Routing.configureAuthRoutes(
                 is NetworkResult.Failure<AuthenticationRequestError> -> when (result.error) {
                     AuthenticationRequestError.PasswordInvalid ->
                         call.respond(HttpStatusCode.Conflict, "Incorrect username or password")
+
                     AuthenticationRequestError.UserNotFound ->
                         call.respond(HttpStatusCode.Conflict, "Incorrect username or password")
                 }
+
                 is NetworkResult.Success<AuthenticationResponse> ->
                     call.respond(HttpStatusCode.OK, result.response)
             }
@@ -71,13 +75,14 @@ fun Routing.configureAuthRoutes(
 
         post("refresh") {
             val request = call.safeReceiveOrNull<RefreshAuthenticationRequest>() ?: return@post
-            when(val result = router.authenticateRefresh(request)){
-                is NetworkResult.Failure<AuthenticationRefreshError> -> when(result.error){
+            when (val result = router.authenticateRefresh(request)) {
+                is NetworkResult.Failure<AuthenticationRefreshError> -> when (result.error) {
                     AuthenticationRefreshError.RefreshTokenInvalid,
                     AuthenticationRefreshError.UserIDNotFound,
                     AuthenticationRefreshError.UserNotFound ->
-                        call.respond(HttpStatusCode.Conflict,"Refresh token Invalid")
+                        call.respond(HttpStatusCode.Conflict, "Refresh token Invalid")
                 }
+
                 is NetworkResult.Success<AuthenticationResponse> ->
                     call.respond(HttpStatusCode.OK, result.response)
             }

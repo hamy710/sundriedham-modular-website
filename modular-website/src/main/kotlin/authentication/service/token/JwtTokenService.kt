@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.node.TextNode
 import io.ktor.server.auth.jwt.*
 import java.util.*
 
-class JwtTokenService (
+class JwtTokenService(
     private val config: TokenConfig,
 ) : TokenService {
     val verifier: JWTVerifier = JWT

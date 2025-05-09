@@ -15,19 +15,19 @@ import org.apache.commons.codec.digest.DigestUtils
 import java.util.*
 
 sealed class AuthenticationRequestError {
-    data object UserNotFound: AuthenticationRequestError()
-    data object PasswordInvalid: AuthenticationRequestError()
+    data object UserNotFound : AuthenticationRequestError()
+    data object PasswordInvalid : AuthenticationRequestError()
 }
 
-sealed class AuthenticationRefreshError{
-    data object RefreshTokenInvalid: AuthenticationRefreshError()
-    data object UserNotFound: AuthenticationRefreshError()
-    data object UserIDNotFound: AuthenticationRefreshError()
+sealed class AuthenticationRefreshError {
+    data object RefreshTokenInvalid : AuthenticationRefreshError()
+    data object UserNotFound : AuthenticationRefreshError()
+    data object UserIDNotFound : AuthenticationRefreshError()
 }
 
-sealed class AuthenticateSignInError{
-    data object InvalidInput: AuthenticateSignInError()
-    data object DatabaseError: AuthenticateSignInError()
+sealed class AuthenticateSignInError {
+    data object InvalidInput : AuthenticateSignInError()
+    data object DatabaseError : AuthenticateSignInError()
 
 }
 
@@ -36,11 +36,11 @@ class AuthenticationRouter(
     private val hashingService: HashService,
     private val jwtTokenService: TokenService
 ) {
-    suspend fun authenticateSignup(request: LoginCredentialsRequest): NetworkResult<Unit, AuthenticateSignInError>{
+    suspend fun authenticateSignup(request: LoginCredentialsRequest): NetworkResult<Unit, AuthenticateSignInError> {
         //check valid username and password
         val isUsernameBlank = request.username.isBlank()
         val isPasswordBlank = request.password.isBlank()
-        if (isUsernameBlank || isPasswordBlank){
+        if (isUsernameBlank || isPasswordBlank) {
             return NetworkResult.Failure(AuthenticateSignInError.InvalidInput)
         }
         //Encode password
@@ -52,9 +52,10 @@ class AuthenticationRouter(
             userid = Identifier(UUID.randomUUID())
         )
         //Insert to db
-        return when(userRepository.insertUser(user)){
+        return when (userRepository.insertUser(user)) {
             is InsertUserResult.SQLError, InsertUserResult.UnknownFailure ->
                 NetworkResult.Failure(AuthenticateSignInError.DatabaseError)
+
             is InsertUserResult.Success ->
                 NetworkResult.Success(Unit)
         }
@@ -81,16 +82,17 @@ class AuthenticationRouter(
         return NetworkResult.Success(createAuthenticationResponse(user))
     }
 
-    suspend fun authenticateRefresh(request: RefreshAuthenticationRequest): NetworkResult<AuthenticationResponse, AuthenticationRefreshError>{
+    suspend fun authenticateRefresh(request: RefreshAuthenticationRequest): NetworkResult<AuthenticationResponse, AuthenticationRefreshError> {
         val token = request.refreshToken
         if (!jwtTokenService.verifyRefreshToken(token)) {
             NetworkResult.Failure(AuthenticationRefreshError.RefreshTokenInvalid)
         }
-        val userID = jwtTokenService.userIDForRefreshToken(token) ?:
-        return NetworkResult.Failure(AuthenticationRefreshError.UserIDNotFound)
+        val userID = jwtTokenService.userIDForRefreshToken(token) ?: return NetworkResult.Failure(
+            AuthenticationRefreshError.UserIDNotFound
+        )
 
-        val user = userRepository.getUserByUserid(userID) ?:
-        return NetworkResult.Failure(AuthenticationRefreshError.UserNotFound)
+        val user = userRepository.getUserByUserid(userID)
+            ?: return NetworkResult.Failure(AuthenticationRefreshError.UserNotFound)
 
         return NetworkResult.Success(createAuthenticationResponse(user))
     }

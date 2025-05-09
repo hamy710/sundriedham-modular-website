@@ -26,9 +26,9 @@ class PostgresUserRepository : UserRepository {
                     it[salt] = user.salt
                     it[id] = user.userid.value
                 }
-            }catch (e:ExposedSQLException){
+            } catch (e: ExposedSQLException) {
                 return@suspendTransaction InsertUserResult.SQLError(e.cause)
-            }catch (e:Error){
+            } catch (e: Error) {
                 return@suspendTransaction InsertUserResult.UnknownFailure
             }
             return@suspendTransaction InsertUserResult.Success
@@ -38,7 +38,7 @@ class PostgresUserRepository : UserRepository {
     override suspend fun getUserByUserid(id: Identifier<User>): User? = suspendTransaction {
         UserDAO.Query.find { UserTable.id eq id.value }
             .limit(1)
-            .map (::daoToModel)
+            .map(::daoToModel)
             .firstOrNull()
     }
 }
