@@ -11,23 +11,12 @@ import authentication.domain.RefreshAuthenticationRequest
 import authentication.router.AuthenticateSignInError
 import authentication.service.token.TokenService
 import com.sundriedham.utils.networking.NetworkResult
+import com.sundriedham.utils.networking.safeReceiveOrNull
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-
-
-suspend inline fun <reified T : Any> ApplicationCall.safeReceiveOrNull(): T? {
-    try {
-        return receive<T>()
-    } catch (e: ContentTransformationException) {
-        respond(HttpStatusCode.BadRequest)
-        return null
-    }
-}
 
 fun Routing.configureAuthRoutes(
     tokenService: TokenService,
