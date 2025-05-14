@@ -1,4 +1,4 @@
-package authentication.service.hashing
+package authentication.service.hash
 
 interface HashService {
     fun generateSaltHash(

@@ -1,4 +1,4 @@
-package authentication.service.hashing
+package authentication.service.hash
 
 data class SaltedHash(
     val hash: String,

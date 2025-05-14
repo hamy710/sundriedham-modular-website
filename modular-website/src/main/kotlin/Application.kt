@@ -1,8 +1,8 @@
 package com.sundriedham
 
-import authentication.data.user.PostgresUserRepository
-import authentication.service.hashing.SHA256HashingService
-import authentication.service.token.JwtTokenService
+import authentication.data.user.DefaultUserRepository
+import authentication.service.hash.DefaultHashService
+import authentication.service.token.DefaultTokenService
 import authentication.service.token.TokenConfig
 import plugins.configureDatabases
 import plugins.configureSecurity
@@ -15,7 +15,6 @@ fun main(args: Array<String>) {
     EngineMain.main(args)
 }
 
-
 fun Application.module() {
     val tokenConfig = TokenConfig(
         secret = System.getenv("JWT_SECRET"),
@@ -26,14 +25,12 @@ fun Application.module() {
 
     )
 
-
     configureDatabases()
-    val userRepository = PostgresUserRepository()
-    val hashingService = SHA256HashingService()
-    val jwtTokenService = JwtTokenService(tokenConfig)
+    val userRepository = DefaultUserRepository()
+    val hashingService = DefaultHashService()
+    val tokenService = DefaultTokenService(tokenConfig)
 
-
-    configureSecurity(jwtTokenService, userRepository, hashingService)
+    configureSecurity(tokenService, userRepository, hashingService)
     configureRouting()
     configureSerialization()
 

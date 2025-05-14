@@ -1,8 +1,7 @@
 package com.sundriedham.authentication
 
 import authentication.data.user.UserRepository
-import authentication.service.hashing.HashService
-import authentication.service.token.JwtTokenService
+import authentication.service.hash.HashService
 import authentication.router.AuthenticationRouter
 import authentication.router.AuthenticationRequestError
 import authentication.router.AuthenticationRefreshError
@@ -10,6 +9,7 @@ import authentication.domain.AuthenticationResponse
 import authentication.domain.LoginCredentialsRequest
 import authentication.domain.RefreshAuthenticationRequest
 import authentication.router.AuthenticateSignInError
+import authentication.service.token.TokenService
 import com.sundriedham.utils.networking.NetworkResult
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -30,14 +30,14 @@ suspend inline fun <reified T : Any> ApplicationCall.safeReceiveOrNull(): T? {
 }
 
 fun Routing.configureAuthRoutes(
-    jwtTokenService: JwtTokenService,
+    tokenService: TokenService,
     userRepository: UserRepository,
-    hashingService: HashService
+    hashService: HashService
 ) {
     val router = AuthenticationRouter(
         userRepository,
-        hashingService,
-        jwtTokenService
+        hashService,
+        tokenService
     )
 
     // "/auth/login, "/auth/refresh, "/auth/signup
@@ -51,6 +51,9 @@ fun Routing.configureAuthRoutes(
 
                     AuthenticateSignInError.InvalidInput ->
                         call.respond(HttpStatusCode.BadRequest, "Invalid fields")
+
+                    AuthenticateSignInError.UnknownError ->
+                        call.respond(HttpStatusCode.BadRequest, "Unknown Error")
                 }
 
                 is NetworkResult.Success<Unit> -> call.respond(HttpStatusCode.OK)

@@ -10,14 +10,18 @@ import com.fasterxml.jackson.databind.node.TextNode
 import io.ktor.server.auth.jwt.*
 import java.util.*
 
-class JwtTokenService(
+class DefaultTokenService(
     private val config: TokenConfig,
 ) : TokenService {
-    val verifier: JWTVerifier = JWT
+    private val verifier: JWTVerifier = JWT
         .require(Algorithm.HMAC256(config.secret))
         .withAudience(config.jwtAudience)
         .withIssuer(config.issuer)
         .build()
+
+    override fun getVerifier(): JWTVerifier{
+        return verifier
+    }
 
     private val refreshVerifier: JWTVerifier = JWT
         .require(Algorithm.HMAC256(config.secret))

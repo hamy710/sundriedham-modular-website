@@ -4,8 +4,8 @@ import authentication.data.user.Identifier
 import authentication.data.user.InsertUserResult
 import authentication.data.user.User
 import authentication.data.user.UserRepository
-import authentication.service.hashing.HashService
-import authentication.service.hashing.SaltedHash
+import authentication.service.hash.HashService
+import authentication.service.hash.SaltedHash
 import authentication.service.token.TokenService
 import authentication.domain.AuthenticationResponse
 import authentication.domain.LoginCredentialsRequest
@@ -28,38 +28,40 @@ sealed class AuthenticationRefreshError {
 sealed class AuthenticateSignInError {
     data object InvalidInput : AuthenticateSignInError()
     data object DatabaseError : AuthenticateSignInError()
-
+    data object UnknownError : AuthenticateSignInError()
 }
 
 class AuthenticationRouter(
     private val userRepository: UserRepository,
-    private val hashingService: HashService,
-    private val jwtTokenService: TokenService
+    private val hashService: HashService,
+    private val tokenService: TokenService
 ) {
     suspend fun authenticateSignup(request: LoginCredentialsRequest): NetworkResult<Unit, AuthenticateSignInError> {
         //check valid username and password
-        val isUsernameBlank = request.username.isBlank()
-        val isPasswordBlank = request.password.isBlank()
-        if (isUsernameBlank || isPasswordBlank) {
+        if (request.username.isBlank()
+            || request.password.isBlank()
+        ) {
             return NetworkResult.Failure(AuthenticateSignInError.InvalidInput)
         }
         //Encode password
-        val saltedHash = hashingService.generateSaltHash(request.password)
+        val hashedPassword = hashService.generateSaltHash(request.password)
         val user = User(
             username = request.username,
-            password = saltedHash.hash,
-            salt = saltedHash.salt,
+            password = hashedPassword.hash,
+            salt = hashedPassword.salt,
             userid = Identifier(UUID.randomUUID())
         )
         //Insert to db
         return when (userRepository.insertUser(user)) {
-            is InsertUserResult.SQLError, InsertUserResult.UnknownFailure ->
+            is InsertUserResult.SQLError ->
                 NetworkResult.Failure(AuthenticateSignInError.DatabaseError)
 
             is InsertUserResult.Success ->
                 NetworkResult.Success(Unit)
-        }
 
+            is InsertUserResult.UnknownFailure ->
+                NetworkResult.Failure(AuthenticateSignInError.UnknownError)
+        }
     }
 
     suspend fun authenticate(request: LoginCredentialsRequest): NetworkResult<AuthenticationResponse, AuthenticationRequestError> {
@@ -67,7 +69,7 @@ class AuthenticationRouter(
         val user = userRepository.getUserByUserName(request.username)
             ?: return NetworkResult.Failure(AuthenticationRequestError.UserNotFound)
         //validate password
-        val isValidPassword = hashingService.verify(
+        val isValidPassword = hashService.verify(
             value = request.password,
             saltedHash = SaltedHash(
                 hash = user.password,
@@ -84,10 +86,11 @@ class AuthenticationRouter(
 
     suspend fun authenticateRefresh(request: RefreshAuthenticationRequest): NetworkResult<AuthenticationResponse, AuthenticationRefreshError> {
         val token = request.refreshToken
-        if (!jwtTokenService.verifyRefreshToken(token)) {
+        if (!tokenService.verifyRefreshToken(token)) {
             NetworkResult.Failure(AuthenticationRefreshError.RefreshTokenInvalid)
         }
-        val userID = jwtTokenService.userIDForRefreshToken(token) ?: return NetworkResult.Failure(
+
+        val userID = tokenService.userIDForRefreshToken(token) ?: return NetworkResult.Failure(
             AuthenticationRefreshError.UserIDNotFound
         )
 
@@ -99,8 +102,7 @@ class AuthenticationRouter(
 
     private fun createAuthenticationResponse(user: User): AuthenticationResponse =
         AuthenticationResponse(
-            token = jwtTokenService.createAccessToken(user),
-            refreshToken = jwtTokenService.createRefreshToken(user)
+            token = tokenService.createAccessToken(user),
+            refreshToken = tokenService.createRefreshToken(user)
         )
-
 }

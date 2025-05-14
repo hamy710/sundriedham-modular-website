@@ -3,7 +3,7 @@ package authentication.data.user
 sealed class InsertUserResult {
     data object Success : InsertUserResult()
     data class SQLError(val cause: Throwable?) : InsertUserResult()
-    data object UnknownFailure : InsertUserResult()
+    data class UnknownFailure(val cause: Throwable?) : InsertUserResult()
 }
 
 interface UserRepository {

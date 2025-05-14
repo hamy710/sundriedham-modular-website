@@ -7,9 +7,7 @@ import com.sundriedham.authentication.data.db.suspendTransaction
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.insert
 
-class PostgresUserRepository : UserRepository {
-
-
+class DefaultUserRepository : UserRepository {
     override suspend fun getUserByUserName(username: String): User? = suspendTransaction {
         UserDAO.Query.find { UserTable.username eq username }
             .limit(1)
@@ -17,8 +15,7 @@ class PostgresUserRepository : UserRepository {
             .firstOrNull()
     }
 
-    override suspend fun insertUser(user: User): InsertUserResult {
-        return suspendTransaction {
+    override suspend fun insertUser(user: User): InsertUserResult = suspendTransaction {
             try {
                 UserTable.insert {
                     it[username] = user.username
@@ -26,13 +23,12 @@ class PostgresUserRepository : UserRepository {
                     it[salt] = user.salt
                     it[id] = user.userid.value
                 }
+                InsertUserResult.Success
             } catch (e: ExposedSQLException) {
-                return@suspendTransaction InsertUserResult.SQLError(e.cause)
+                InsertUserResult.SQLError(e.cause)
             } catch (e: Error) {
-                return@suspendTransaction InsertUserResult.UnknownFailure
+                InsertUserResult.UnknownFailure(e.cause)
             }
-            return@suspendTransaction InsertUserResult.Success
-        }
     }
 
     override suspend fun getUserByUserid(id: Identifier<User>): User? = suspendTransaction {
