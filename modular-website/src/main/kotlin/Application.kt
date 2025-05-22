@@ -1,19 +1,19 @@
 package com.sundriedham
 
-import com.sundriedham.data.user.InMemoryUserRepository
-import com.sundriedham.Authentication.token.JwtTokenService
-import com.sundriedham.Authentication.token.TokenConfig
-import com.sundriedham.plugins.configureSecurity
-import com.sundriedham.plugins.configureRouting
-import com.sundriedham.plugins.configureSerialization
+import authentication.data.user.DefaultUserRepository
+import authentication.service.hash.DefaultHashService
+import authentication.service.token.DefaultTokenService
+import authentication.service.token.TokenConfig
+import plugins.configureDatabases
+import plugins.configureSecurity
+import plugins.configureRouting
+import plugins.configureSerialization
 import io.ktor.server.application.*
-import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 
 fun main(args: Array<String>) {
     EngineMain.main(args)
 }
-
 
 fun Application.module() {
     val tokenConfig = TokenConfig(
@@ -24,11 +24,13 @@ fun Application.module() {
         expiresIn = 3_600_000L
 
     )
-    val userRepository = InMemoryUserRepository()
-    val jwtTokenService = JwtTokenService(userRepository, tokenConfig)
 
+    configureDatabases()
+    val userRepository = DefaultUserRepository()
+    val hashingService = DefaultHashService()
+    val tokenService = DefaultTokenService(tokenConfig)
 
-    configureSecurity(jwtTokenService = jwtTokenService)
+    configureSecurity(tokenService, userRepository, hashingService)
     configureRouting()
     configureSerialization()
 

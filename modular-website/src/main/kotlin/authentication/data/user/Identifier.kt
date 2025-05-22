@@ -1,8 +1,8 @@
-package com.sundriedham.data.user
+package authentication.data.user
 
 import java.util.*
 
-data class Identifier<Entity>(
+data class Identifier<T>(
     val value: UUID
 ) {
     override fun toString(): String =
